@@ -1,27 +1,38 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
 import connectDB from './config/db.js';
-import userRoutes from './routes/userRoutes.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 
-// Load environment variables
-dotenv.config();
+// Route imports
+import userRoutes from './routes/userRoutes.js';
+import courseRoutes from './routes/courseRoutes.js';
 
-// Connect to MongoDB
+// --- Initial Setup ---
+dotenv.config();
 connectDB();
 
 const app = express();
 
-// Middleware to parse JSON request bodies
+// --- Core Middleware ---
+// 1. Body parser to read JSON
 app.use(express.json());
 
-// --- API Routes ---
-// Any request starting with '/api/users' will be handled by userRoutes
-app.use('/api/users', userRoutes);
+// 2. Cookie parser to read cookies. MUST be before any route that uses cookies.
+app.use(cookieParser());
 
-// --- Custom Error Handling Middleware ---
-app.use(notFound);      // This will catch any request that doesn't match the routes above
-app.use(errorHandler);  // This is our custom error handler
+
+// --- API Routes ---
+// All API routes are defined here.
+app.use('/api/users', userRoutes);
+app.use('/api/courses', courseRoutes);
+
+
+// --- Fallback and Error Handling Middleware ---
+// These MUST be the last middleware to be used.
+app.use(notFound);
+app.use(errorHandler);
+
 
 const PORT = process.env.PORT || 5000;
 
